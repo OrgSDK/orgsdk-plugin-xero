@@ -1,0 +1,35 @@
+{
+	"$schema": "https://orgsdk.ai/schemas/plugin-manifest.v1.json",
+	"name": "xero",
+	"version": "0.1.1",
+	"description": "Read Xero evidence for invoice readiness and unbilled-work review without changing provider records.",
+	"entry": "index.ts",
+	"auth": {
+		"type": "token",
+		"provider": "xero-oauth",
+		"label": "Xero OAuth access token",
+		"hint": "Attach an xero-oauth credential containing secret_accessToken and configure tenantId. On OrgSDK 0.1.0 this is a manually managed OAuth access token; renew it externally before expiry. Native Xero OAuth onboarding requires a future host release.",
+		"scopes": [
+			"offline_access",
+			"accounting.invoices.read",
+			"accounting.contacts.read",
+			"accounting.attachments.read"
+		]
+	},
+	"marketplace": {
+		"displayName": "Xero Readiness",
+		"category": "Finance",
+		"tagline": "Read Xero source evidence for reviewed invoice drafts.",
+		"tags": ["readonly", "invoicing", "accounting"],
+		"useCases": [
+			"Compare project/time evidence with existing invoices",
+			"Prepare an invoice-readiness exception list",
+			"Build reviewed drafts in OrgSDK without writing to the provider"
+		],
+		"permissionsSummary": "Reads the configured authorised Xero organisation only: invoices/bills, contacts and invoice attachment metadata. Every call verifies the tenant against /connections. No writes, email, payments, deletion or file downloads.",
+		"links": {
+			"homepage": "https://orgsdk.ai",
+			"docs": "https://developer.xero.com/documentation/api/accounting/invoices"
+		}
+	}
+}
