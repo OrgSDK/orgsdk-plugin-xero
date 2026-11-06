@@ -1,23 +1,22 @@
-# Current execution contract
-
-On npm host 0.1.0, attach a manually managed `xero-oauth` credential with `secret_accessToken` and configure the exact `tenantId`. Renew access tokens externally before expiry. Native Xero connect/refresh is not available in that host version. Every call verifies the tenant with `/connections`.
-
-Native OAuth providers receive only `{source: "byo", secret_accessToken}`. The host owns refresh. The first-party relay is retired.
-
-## Historical source reference
-
-The following describes the former author-source host; current npm and native credential behaviour above takes precedence.
-
 # Xero invoice readiness for OrgSDK
 
-Private, proprietary external plugin. Reads one explicitly configured Xero organisation to supply source evidence for reviewed drafts in OrgSDK. It never creates, edits, sends, authorises, voids, deletes, uploads, downloads files, or pays invoices.
+Apache-2.0 external plugin. Reads one explicitly configured Xero organisation to supply source evidence for reviewed drafts in OrgSDK. It never creates, edits, sends, authorises, voids, deletes, uploads, downloads files, or pays invoices.
 
-This is a locally validated candidate. Native `xero-oauth` connection/exchange/refresh support must exist in the installed OrgSDK platform before OAuth setup works. That support is tracked in [OrgSDK issue 9](https://github.com/OrgSDK/OrgSDK/issues/9); this repository does not imply it is released or deployed. The plugin owns no OAuth callback, credential mutation or HTTP endpoint.
+## Install in OrgSDK
+
+Open your project's Plugins page, select this plugin and enable the pinned release.
+The default catalogue is https://orgsdk.ai/plugins/releases.json. The executor
+downloads the versioned bundle and verifies its SHA256. Configure the provider
+and attach the credential described below before running an action.
+
+The plugin is Apache-2.0 licensed; see LICENSE, NOTICE and TRADEMARKS.md.
+The generated npm distribution is a separate publication surface. Installing npm
+files alone does not register a project plugin. Local builds do not publish it.
 
 ## Setup
 
-1. Use a platform build with native `xero-oauth` support. Register your own Xero OAuth application using its documented callback URL, and connect through OrgSDK. For confidential web apps Xero requires HTTP Basic client authentication during exchange and refresh. The platform owns the OAuth flow and refresh-token rotation.
-2. Request exactly `offline_access accounting.invoices.read accounting.contacts.read accounting.attachments.read`. The three accounting scopes permit GET reads; `offline_access` permits the platform to refresh. These endpoints do not need `openid`, `profile`, `email`, `accounting.settings.read`, `accounting.payments.read`, or deprecated `accounting.transactions.read`.
+1. Obtain an OAuth access token with your own Xero application outside OrgSDK. On the released OrgSDK 0.1.0 host, Xero tokens must be managed and renewed externally; native Xero consent and refresh are not available in that version.
+2. Grant `accounting.invoices.read accounting.contacts.read accounting.attachments.read`. If the external token manager needs refresh tokens, also request `offline_access`. This plugin performs no token exchange or refresh.
 3. Attach the resulting `xero-oauth` credential to the plugin. The runtime injects `{ "xero-oauth": { "secret_accessToken": "..." } }`; never put access/refresh/client secrets in plugin configuration, action arguments or source.
 4. Use trusted setup tooling outside this plugin to read `GET https://api.xero.com/connections` with your authorised Xero connection. Identify the intended `ORGANISATION` and manually configure its exact `tenantId` UUID. There is no tenant chooser in the current platform. Keep the access token in the setup credential; never put it in OrgSDK action arguments. Example plugin configuration:
 
@@ -79,7 +78,7 @@ bun --no-env-file /absolute/path/to/orgsdk-platform/runtime/src/cli.ts package-p
   --directory "$PWD" --output "$PWD/release" --license "$PWD/LICENSE"
 ```
 
-The `release/` result is self-contained and suitable for the active runtime's external plugin loader; it is distinct from the historical catalog artifact in `dist/`. Both outputs are ignored by Git. Package twice and compare hashes before distribution. Source remains private; no publishing workflow or remote is configured.
+The `release/` result is self-contained and suitable for the active runtime's external plugin loader; it is distinct from the historical catalog artifact in `dist/`. Both outputs are ignored by Git. Package twice and compare hashes before distribution. The source repository carries a gated npm publication workflow. Publication and catalogue deployment are separate from local builds.
 
 Tests use synthetic representative fixtures and mocked HTTP transport. No customer credentials or live Xero account has been used. Unit/contract checks do not establish provider account permissions, live OAuth acceptance or production readiness.
 
